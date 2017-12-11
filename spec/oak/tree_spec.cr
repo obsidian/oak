@@ -435,6 +435,27 @@ module Oak
       end
     end
 
+    describe "#find" do
+      context "if a matching" do
+        it "should return a single result" do
+          tree = Tree(Symbol).new
+          tree.add "/about", :about
+
+          result = tree.find("/about")
+          result.should_not be_nil
+          result.not_nil!.leaf.should eq :about
+        end
+      end
+
+      context "if not matching" do
+        tree = Tree(Symbol).new
+        tree.add "/about", :about
+
+        result = tree.find("/contact")
+        result.should be_nil
+      end
+    end
+
     describe "#search" do
       context "a single node" do
         it "does not find when using different path" do

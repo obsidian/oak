@@ -59,12 +59,8 @@ class Oak::Tree(T)
     end
   end
 
-  def results
-    ([] of Result(T)).tap do |ary|
-      each_result do |result|
-        ary << result
-      end
-    end
+  def find(path)
+    search(path).first?
   end
 
   def leaves?
@@ -73,6 +69,14 @@ class Oak::Tree(T)
 
   def placeholder?
     @root && key.empty? && leaves.empty?
+  end
+
+  def results
+    ([] of Result(T)).tap do |ary|
+      each_result do |result|
+        ary << result
+      end
+    end
   end
 
   def search(path)

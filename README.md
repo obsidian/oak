@@ -29,7 +29,7 @@ tree.add "/products/featured", :featured
 results = tree.search "/products/featured"
 
 if result = results.first?
-  puts result.leaves.first # => :featured
+  puts result.leaf # => :featured
 end
 ```
 
@@ -64,7 +64,7 @@ tree.add "/products/:id", :product
 
 result = tree.find "/products/1234"
 
-if result.found?
+if result
   puts result.params["id"]? # => "1234"
 end
 ```

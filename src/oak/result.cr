@@ -10,7 +10,7 @@ struct Oak::Result(T)
   end
 
   def leaf
-    leaves.first?
+    leaves.first
   end
 
   def found?
