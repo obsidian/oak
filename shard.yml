@@ -1,0 +1,9 @@
+name: oak
+crystal: 0.23.1
+version: 0.1.0
+
+authors:
+  - jwaldrip <jason@waldrip.net>
+
+dependencies:
+license: MIT
