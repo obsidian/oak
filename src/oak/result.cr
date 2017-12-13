@@ -25,6 +25,11 @@ struct Oak::Result(T)
     end
   end
 
+  # alias for `#leaf`
+  def payload
+    leaf
+  end
+
   def track(branch : Tree(T))
     @nodes << branch
     self
