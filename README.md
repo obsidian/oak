@@ -135,10 +135,10 @@ tree.add "/categories/:category", :category # listing of posts under each catego
 ```
 ## Roadmap
 
-[X] Support multiple leaves at the same level in the tree.
-[X] Return multiple matches when searching the tree.
-[X] Support optionals in the key path.
-[ ] Overcome shared key caveat.
+* [X] Support multiple leaves at the same level in the tree.
+* [X] Return multiple matches when searching the tree.
+* [X] Support optionals in the key path.
+* [ ] Overcome shared key caveat.
 
 ## Implementation
 
