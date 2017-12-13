@@ -399,7 +399,6 @@ module Oak
           nodes[1].key.should eq("edit")
         end
 
-
         it "does not allow different named parameters sharing same level" do
           tree = Tree(Symbol).new
           tree.add "/", :root
@@ -473,7 +472,7 @@ module Oak
           results = tree.search "/about"
           results.empty?.should be_false
           results.first.key.should eq("/about")
-          results.first.found?.should be_truthy
+          results.first.leaves.empty?.should_not be_truthy
           results.first.leaves.should contain(:about)
         end
 

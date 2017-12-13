@@ -6,7 +6,7 @@ module Oak
       context "a new instance" do
         it "returns false when no payload is associated" do
           result = Result(Nil).new
-          result.found?.should be_false
+          result.leaves.empty?.should_not be_false
         end
       end
 
@@ -16,7 +16,7 @@ module Oak
           result = Result(Symbol).new
           result.use tree
 
-          result.found?.should be_true
+          result.leaves.empty?.should_not be_true
         end
       end
     end
@@ -56,20 +56,20 @@ module Oak
       it "uses the tree payload" do
         tree = Tree(Symbol).new("/", :root)
         result = Result(Symbol).new
-        result.found?.should be_falsey
+        result.leaves.empty?.should_not be_falsey
 
         result.use tree
-        result.found?.should be_truthy
+        result.leaves.empty?.should_not be_truthy
         result.leaves.should eq(tree.leaves)
       end
 
       it "allow not to assign payload" do
         tree = Tree(Symbol).new("/", :root)
         result = Result(Symbol).new
-        result.found?.should be_falsey
+        result.leaves.empty?.should_not be_falsey
 
         result.track tree
-        result.found?.should be_falsey
+        result.leaves.empty?.should_not be_falsey
       end
     end
   end

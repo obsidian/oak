@@ -1,3 +1,4 @@
+# :nodoc:
 struct Oak::Walker
   getter path : String
   getter key : String

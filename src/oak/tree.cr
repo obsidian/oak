@@ -1,4 +1,5 @@
 class Oak::Tree(T)
+  # :nodoc:
   struct Context(T)
     getter branches = [] of Tree(T)
     getter leaves = [] of T
@@ -8,12 +9,14 @@ class Oak::Tree(T)
     end
   end
 
+  # The error class that is returned in the case of a shared key conflict.
   class SharedKeyError < Exception
-      def initialize(new_key, existing_key)
-        super("Tried to place key '#{new_key}' at same level as '#{existing_key}'")
-      end
+    def initialize(new_key, existing_key)
+      super("Tried to place key '#{new_key}' at same level as '#{existing_key}'")
     end
+  end
 
+  # :nodoc:
   enum Kind : UInt8
     Normal
     Named
@@ -24,53 +27,69 @@ class Oak::Tree(T)
   include Comparable(self)
 
   @root = false
-  getter context = Context(T).new
+
+  # The key of the current tree branch
   getter key : String = ""
-  getter priority : Int32 = 0
+  protected getter priority : Int32 = 0
+  protected getter context = Context(T).new
   protected getter kind = Kind::Normal
 
+  # :nodoc:
   delegate branches, leaves, to: @context
+
+  # :nodoc:
   delegate normal?, named?, glob?, to: kind
+  # :nodoc:
   delegate sort!, to: branches
+
+  # Iterate over each result
   delegate each, to: results
 
   def initialize
     @root = true
   end
 
+  # :nodoc:
   def initialize(@key : String, @context : Context(T))
     @priority = compute_priority
   end
 
+  # :nodoc:
   def initialize(@key : String, payload : T? = nil)
     @priority = compute_priority
     leaves << payload if payload
   end
 
+  # :nodoc:
   def <=>(other : self)
     result = kind <=> other.kind
     return result if result != 0
     other.priority <=> priority
   end
 
+  # Adds a path to the tree.
   def add(path : String, payload : T)
     OptionalsParser.parse(path).each do |path|
       add_path path, payload
     end
   end
 
+  # Finds the first matching result.
   def find(path)
     search(path).first?
   end
 
+  # :nodoc:
   def leaves?
     !leaves.empty?
   end
 
+  # :nodoc:
   def placeholder?
     @root && key.empty? && leaves.empty?
   end
 
+  # Lists all the results possible within the entire tree.
   def results
     ([] of Result(T)).tap do |ary|
       each_result do |result|
@@ -79,6 +98,7 @@ class Oak::Tree(T)
     end
   end
 
+  # Searchs the Tree and returns all results as an array.
   def search(path)
     ([] of Result(T)).tap do |results|
       search(path) do |result|
@@ -87,16 +107,19 @@ class Oak::Tree(T)
     end
   end
 
+  # Searches the Tree and yields each result to the block.
   def search(path, &block : Result(T) -> _)
     search(path, Result(T).new, &block)
   end
 
+  # Returns a string visualization of the Radix tree
   def visualize
     String.build do |io|
       visualize(0, io)
     end
   end
 
+  # :nodoc:
   protected def add_path(path : String, payload : T)
     if placeholder?
       @key = path
