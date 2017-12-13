@@ -75,7 +75,22 @@ Please see `Oak::Tree#add` documentation for more usage examples.
 ## Optionals
 
 Oak has the ability to add optional paths, i.e. `foo(/bar)/:id`, which will expand
-into two routes: `foo/bar/:id` and `foo/:id`
+into two routes: `foo/bar/:id` and `foo/:id`. In the following example, both results
+will match and return the same leaf.
+
+```crystal
+tree.add "/products(/free)/:id", :product
+
+if result = tree.find "/products/1234"
+  puts result.params["id"]? # => "1234"
+  puts result.leaf # => :product
+end
+
+if result = tree.find "/products/free/1234"
+  puts result.params["id"]? # => "1234"
+  puts result.leaf # => :product
+end
+```
 
 ## Caveats
 
