@@ -201,10 +201,6 @@ class Oak::Tree(T)
   end
 
   protected def search(path, result : Result(T), &block : Result(T) -> _) : Nil
-    if @root && (path.bytesize == key.bytesize && path == key) && leaves?
-      result = result.use(self, &block)
-    end
-
     walker = Walker.new(path: path, key: key)
 
     walker.while_matching do
