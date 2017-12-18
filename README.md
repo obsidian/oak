@@ -1,7 +1,7 @@
 # Oak
 Another [radix tree](https://en.wikipedia.org/wiki/Radix_tree) implementation for crystal-lang
 
-[![Build Status](https://img.shields.io/travis/obsidian/oak/master.svg)](https://travis-ci.org/obsidian/oak)
+[![Build Status](https://img.shields.io/travis/obsidian/oak.svg)](https://travis-ci.org/obsidian/oak)
 [![Latest Release](https://img.shields.io/github/release/obsidian/oak.svg)](https://github.com/obsidian/oak/releases)
 
 ## Installation
