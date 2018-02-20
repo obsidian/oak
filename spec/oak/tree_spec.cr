@@ -436,22 +436,24 @@ module Oak
 
     describe "#find" do
       context "if a matching" do
-        it "should return a single result" do
+        it "should be found" do
           tree = Tree(Symbol).new
           tree.add "/about", :about
 
           result = tree.find("/about")
-          result.should_not be_nil
-          result.not_nil!.leaf.should eq :about
+          result.found?.should be_true
+          result.leaf.should eq :about
         end
       end
 
       context "if not matching" do
-        tree = Tree(Symbol).new
-        tree.add "/about", :about
+        it "should not be found" do
+          tree = Tree(Symbol).new
+          tree.add "/about", :about
 
-        result = tree.find("/contact")
-        result.should be_nil
+          result = tree.find("/contact")
+          result.found?.should be_false
+        end
       end
     end
 

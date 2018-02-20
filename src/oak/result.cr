@@ -13,6 +13,10 @@ struct Oak::Result(T)
   def initialize(@nodes, @params)
   end
 
+  def found?
+    !leaves.empty?
+  end
+
   # Returns the first leaf in the result.
   def leaf
     leaves.first

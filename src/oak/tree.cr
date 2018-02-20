@@ -76,7 +76,7 @@ class Oak::Tree(T)
 
   # Finds the first matching result.
   def find(path)
-    search(path).first?
+    search(path).first? || Result(T).new
   end
 
   # :nodoc:
