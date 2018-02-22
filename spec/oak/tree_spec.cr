@@ -56,15 +56,15 @@ module Oak
       end
     end
 
-    describe "#leaves" do
+    describe "#payloads" do
       it "accepts any form of payload" do
         tree = Tree.new("abc", :payload)
-        tree.leaves?.should be_truthy
-        tree.leaves.should contain(:payload)
+        tree.payloads?.should be_truthy
+        tree.payloads.should contain(:payload)
 
         tree = Tree.new("abc", 1_000)
-        tree.leaves?.should be_truthy
-        tree.leaves.should contain(1_000)
+        tree.payloads?.should be_truthy
+        tree.payloads.should contain(1_000)
       end
 
       # This example focuses on the internal representation of `payload`
@@ -74,8 +74,8 @@ module Oak
       # from the possible types.
       it "makes optional to provide a payload" do
         tree = Tree(Int32).new("abc")
-        tree.leaves?.should be_falsey
-        # typeof(tree.leaves).should co ntain(Int32 | Nil)
+        tree.payloads?.should be_falsey
+        # typeof(tree.payloads).should co ntain(Int32 | Nil)
       end
     end
 
@@ -120,18 +120,18 @@ module Oak
     end
 
     describe "#sort!" do
-      it "orders branches" do
+      it "orders children" do
         root = Tree(Int32).new("/")
         tree1 = Tree(Int32).new("a", 1)
         tree2 = Tree(Int32).new("bc", 2)
         tree3 = Tree(Int32).new("def", 3)
 
-        root.branches.push(tree1, tree2, tree3)
+        root.children.push(tree1, tree2, tree3)
         root.sort!
 
-        root.branches[0].should eq(tree3)
-        root.branches[1].should eq(tree2)
-        root.branches[2].should eq(tree1)
+        root.children[0].should eq(tree3)
+        root.children[1].should eq(tree2)
+        root.children[2].should eq(tree1)
       end
 
       it "orders catch all and named parameters lower than normal trees" do
@@ -140,12 +140,12 @@ module Oak
         tree2 = Tree(Int32).new("abc", 2)
         tree3 = Tree(Int32).new(":query", 3)
 
-        root.branches.push(tree1, tree2, tree3)
+        root.children.push(tree1, tree2, tree3)
         root.sort!
 
-        root.branches[0].should eq(tree2)
-        root.branches[1].should eq(tree3)
-        root.branches[2].should eq(tree1)
+        root.children[0].should eq(tree2)
+        root.children[1].should eq(tree3)
+        root.children[2].should eq(tree1)
       end
     end
 
@@ -153,7 +153,7 @@ module Oak
       it "contains a root placeholder node" do
         tree = Tree(Symbol).new
         tree.should be_a(Tree(Symbol))
-        tree.leaves?.should be_falsey
+        tree.payloads?.should be_falsey
         tree.placeholder?.should be_true
       end
     end
@@ -165,8 +165,8 @@ module Oak
           tree.add "/abc", :abc
           tree.should be_a(Tree(Symbol))
           tree.placeholder?.should be_false
-          tree.leaves?.should be_truthy
-          tree.leaves.should contain(:abc)
+          tree.payloads?.should be_truthy
+          tree.payloads.should contain(:abc)
         end
       end
 
@@ -180,11 +180,11 @@ module Oak
           # /    (:root)
           # +-bc (:bc)
           # \-a  (:a)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("bc")
-          tree.branches[0].leaves.should contain(:bc)
-          tree.branches[1].key.should eq("a")
-          tree.branches[1].leaves.should contain(:a)
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("bc")
+          tree.children[0].payloads.should contain(:bc)
+          tree.children[1].key.should eq("a")
+          tree.children[1].payloads.should contain(:a)
         end
 
         it "inserts nodes with shared parent" do
@@ -197,11 +197,11 @@ module Oak
           # +-a
           #   +-xyz (:axyz)
           #   \-bc  (:abc)
-          tree.branches.size.should eq(1)
-          tree.branches[0].key.should eq("a")
-          tree.branches[0].branches.size.should eq(2)
-          tree.branches[0].branches[0].key.should eq("xyz")
-          tree.branches[0].branches[1].key.should eq("bc")
+          tree.children.size.should eq(1)
+          tree.children[0].key.should eq("a")
+          tree.children[0].children.size.should eq(2)
+          tree.children[0].children[0].key.should eq("xyz")
+          tree.children[0].children[1].key.should eq("bc")
         end
 
         it "inserts multiple parent nodes" do
@@ -220,17 +220,17 @@ module Oak
           # +-blog/
           #       +-articles  (:articles)
           #       \-tags      (:tags)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("admin/")
-          tree.branches[0].leaves?.should be_falsey
-          tree.branches[0].branches[0].key.should eq("products")
-          tree.branches[0].branches[1].key.should eq("users")
-          tree.branches[1].key.should eq("blog/")
-          tree.branches[1].leaves?.should be_falsey
-          tree.branches[1].branches[0].key.should eq("articles")
-          tree.branches[1].branches[0].leaves?.should be_truthy
-          tree.branches[1].branches[1].key.should eq("tags")
-          tree.branches[1].branches[1].leaves?.should be_truthy
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("admin/")
+          tree.children[0].payloads?.should be_falsey
+          tree.children[0].children[0].key.should eq("products")
+          tree.children[0].children[1].key.should eq("users")
+          tree.children[1].key.should eq("blog/")
+          tree.children[1].payloads?.should be_falsey
+          tree.children[1].children[0].key.should eq("articles")
+          tree.children[1].children[0].payloads?.should be_truthy
+          tree.children[1].children[1].key.should eq("tags")
+          tree.children[1].children[1].payloads?.should be_truthy
         end
 
         it "inserts multiple nodes with mixed parents" do
@@ -246,11 +246,11 @@ module Oak
           #   +-uthorizations      (:authorizations)
           #   |             \-/:id (:authorization)
           #   \-pplications        (:applications)
-          tree.branches.size.should eq(2)
-          tree.branches[1].key.should eq("a")
-          tree.branches[1].branches.size.should eq(2)
-          tree.branches[1].branches[0].leaves.should contain(:authorizations)
-          tree.branches[1].branches[1].leaves.should contain(:applications)
+          tree.children.size.should eq(2)
+          tree.children[1].key.should eq("a")
+          tree.children[1].children.size.should eq(2)
+          tree.children[1].children[0].payloads.should contain(:authorizations)
+          tree.children[1].children[1].payloads.should contain(:applications)
         end
 
         it "supports insertion of mixed routes out of order" do
@@ -265,13 +265,13 @@ module Oak
           #     \-s/:user        (:user)
           #             \-/repos (:user_repos)
           tree.key.should eq("/user")
-          tree.leaves?.should be_truthy
-          tree.leaves.should contain(:me)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("/repos")
-          tree.branches[1].key.should eq("s/:user")
-          tree.branches[1].leaves.should contain(:user)
-          tree.branches[1].branches[0].key.should eq("/repos")
+          tree.payloads?.should be_truthy
+          tree.payloads.should contain(:me)
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("/repos")
+          tree.children[1].key.should eq("s/:user")
+          tree.children[1].payloads.should contain(:user)
+          tree.children[1].children[0].key.should eq("/repos")
         end
       end
 
@@ -288,11 +288,11 @@ module Oak
           # /    (:root)
           # +-bc (payload2)
           # \-a  (payload1)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("bc")
-          tree.branches[0].leaves.should contain(payload2)
-          tree.branches[1].key.should eq("a")
-          tree.branches[1].leaves.should contain(payload1)
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("bc")
+          tree.children[0].payloads.should contain(payload2)
+          tree.children[1].key.should eq("a")
+          tree.children[1].payloads.should contain(payload1)
         end
       end
 
@@ -306,9 +306,9 @@ module Oak
           # /          (:root)
           # +-素晴らしい    (:amazing)
           # \-日本語      (:japanese)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("素晴らしい")
-          tree.branches[1].key.should eq("日本語")
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("素晴らしい")
+          tree.children[1].key.should eq("日本語")
         end
 
         it "inserts nodes with shared parent" do
@@ -320,11 +320,11 @@ module Oak
           # /                (:root)
           # \-日本語            (:japanese)
           #     \-日本は難しい     (:japanese_is_difficult)
-          tree.branches.size.should eq(1)
-          tree.branches[0].key.should eq("日本")
-          tree.branches[0].branches.size.should eq(2)
-          tree.branches[0].branches[0].key.should eq("は難しい")
-          tree.branches[0].branches[1].key.should eq("語")
+          tree.children.size.should eq(1)
+          tree.children[0].key.should eq("日本")
+          tree.children[0].children.size.should eq(2)
+          tree.children[0].children[0].key.should eq("は難しい")
+          tree.children[0].children[1].key.should eq("語")
         end
       end
 
@@ -345,17 +345,17 @@ module Oak
           # |          \-:id       (:product)
           # |              \-/edit (:edit)
           # \-*filepath            (:all)
-          tree.branches.size.should eq(2)
-          tree.branches[0].key.should eq("products")
-          tree.branches[0].branches[0].key.should eq("/")
+          tree.children.size.should eq(2)
+          tree.children[0].key.should eq("products")
+          tree.children[0].children[0].key.should eq("/")
 
-          nodes = tree.branches[0].branches[0].branches
+          nodes = tree.children[0].children[0].children
           nodes.size.should eq(2)
           nodes[0].key.should eq("featured")
           nodes[1].key.should eq(":id")
-          nodes[1].branches[0].key.should eq("/edit")
+          nodes[1].children[0].key.should eq("/edit")
 
-          tree.branches[1].key.should eq("*filepath")
+          tree.children[1].key.should eq("*filepath")
         end
 
         it "does not split named parameters across shared key" do
@@ -367,12 +367,12 @@ module Oak
           # /                         (:root)
           # +-:category               (:category)
           #           \-/:subcategory (:subcategory)
-          tree.branches.size.should eq(1)
-          tree.branches[0].key.should eq(":category")
+          tree.children.size.should eq(1)
+          tree.children[0].key.should eq(":category")
 
-          # inner branches
-          tree.branches[0].branches.size.should eq(1)
-          tree.branches[0].branches[0].key.should eq("/:subcategory")
+          # inner children
+          tree.children[0].children.size.should eq(1)
+          tree.children[0].children[0].key.should eq("/:subcategory")
         end
 
         it "does allow same named parameter in different order of insertion" do
@@ -387,14 +387,14 @@ module Oak
           #              +-videos (:members_videos)
           #              \-edit   (:members_edit)
           tree.key.should eq("/members/")
-          tree.branches.size.should eq(2)
+          tree.children.size.should eq(2)
 
-          # first level branches nodes
-          tree.branches[0].key.should eq("export")
-          tree.branches[1].key.should eq(":id/")
+          # first level children nodes
+          tree.children[0].key.should eq("export")
+          tree.children[1].key.should eq(":id/")
 
-          # inner branches
-          nodes = tree.branches[1].branches
+          # inner children
+          nodes = tree.children[1].children
           nodes[0].key.should eq("videos")
           nodes[1].key.should eq("edit")
         end
@@ -421,15 +421,15 @@ module Oak
         #   results = tree.search("/c-1")
         #   puts results.map(&.key)
         #   results.size.should eq 1
-        #   results.first.leaves.size.should eq 1
+        #   results.first.payloads.size.should eq 1
         #   results.first.params.should eq({ "post" => "1" })
-        #   results.first.leaves.first.should eq :post
+        #   results.first.payloads.first.should eq :post
         #
         #   results = tree.search("/a/b")
         #   results.size.should eq 1
-        #   results.first.leaves.size.should eq 1
+        #   results.first.payloads.size.should eq 1
         #   results.first.params.should eq({ "category" => "a", "post" => "b" })
-        #   results.first.leaves.first.should eq :category_post
+        #   results.first.payloads.first.should eq :category_post
         # end
       end
     end
@@ -442,7 +442,7 @@ module Oak
 
           result = tree.find("/about")
           result.found?.should be_true
-          result.leaf.should eq :about
+          result.payload.should eq :about
         end
       end
 
@@ -474,8 +474,8 @@ module Oak
           results = tree.search "/about"
           results.empty?.should be_false
           results.first.key.should eq("/about")
-          results.first.leaves.empty?.should_not be_truthy
-          results.first.leaves.should contain(:about)
+          results.first.payloads.empty?.should_not be_truthy
+          results.first.payloads.should contain(:about)
         end
 
         it "finds when path contains trailing slash" do
@@ -494,7 +494,7 @@ module Oak
           result = tree.search "/about"
           result.empty?.should be_false
           result.first.key.should eq("/about/")
-          result.first.leaves.should contain(:about)
+          result.first.payloads.should contain(:about)
         end
       end
 
@@ -508,7 +508,7 @@ module Oak
           results = tree.search("/abc")
           results.empty?.should be_false
           results.first.key.should eq("/abc")
-          results.first.leaves.should contain(:abc)
+          results.first.payloads.should contain(:abc)
         end
 
         it "finds matching path across separator" do
@@ -519,7 +519,7 @@ module Oak
           results = tree.search("/products")
           results.empty?.should be_false
           results.first.key.should eq("/products")
-          results.first.leaves.should contain(:products)
+          results.first.payloads.should contain(:products)
         end
 
         it "finds matching path across parents" do
@@ -533,7 +533,7 @@ module Oak
           results = tree.search("/blog/tags/")
           results.empty?.should be_false
           results.first.key.should eq("/blog/tags")
-          results.first.leaves.should contain(:tags)
+          results.first.payloads.should contain(:tags)
         end
       end
 
@@ -560,7 +560,7 @@ module Oak
           results = tree.search("/src/file.png")
           results.empty?.should be_false
           results.first.key.should eq("/*filepath")
-          results.first.leaves.should contain(:all)
+          results.first.payloads.should contain(:all)
         end
 
         it "returns catch all in parameters" do
@@ -641,7 +641,7 @@ module Oak
           results = tree.search("/products/10")
           results.empty?.should be_false
           results.first.key.should eq("/products/:id")
-          results.first.leaves.should contain(:product)
+          results.first.payloads.should contain(:product)
         end
 
         it "does not find partial matching path" do
@@ -711,7 +711,7 @@ module Oak
           results = tree.search("/about/shipping")
           results.empty?.should be_false
           results.first.key.should eq("/:section/:page")
-          results.first.leaves.should contain(:static_page)
+          results.first.payloads.should contain(:static_page)
         end
 
         it "returns named parameters in result" do
@@ -743,7 +743,7 @@ module Oak
           results = tree.search("/products/1000")
           results.empty?.should be_false
           results.first.key.should eq("/products/:id")
-          results.first.leaves.should contain(:product)
+          results.first.payloads.should contain(:product)
 
           results = tree.search("/admin/articles")
           results.empty?.should be_false
@@ -753,7 +753,7 @@ module Oak
           results = tree.search("/products/featured")
           results.empty?.should be_false
           results.first.key.should eq("/products/featured")
-          results.first.leaves.should contain(:featured)
+          results.first.payloads.should contain(:featured)
         end
       end
 

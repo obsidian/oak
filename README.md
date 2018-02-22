@@ -18,7 +18,7 @@ dependencies:
 
 ### Building Trees
 
-You can associate one or more *leaves* with each path added to the tree:
+You can associate one or more *payloads* with each path added to the tree:
 
 ```crystal
 require "oak"
@@ -30,11 +30,11 @@ tree.add "/products/featured", :featured
 results = tree.search "/products/featured"
 
 if result = results.first?
-  puts result.leaf # => :featured
+  puts result.payload # => :featured
 end
 ```
 
-The types allowed for a leaf are defined on Tree definition:
+The types allowed for a payload are defined on Tree definition:
 
 ```crystal
 tree = Oak::Tree(Symbol).new
@@ -76,19 +76,19 @@ Please see `Oak::Tree#add` documentation for more usage examples.
 
 Oak has the ability to add optional paths, i.e. `foo(/bar)/:id`, which will expand
 into two routes: `foo/bar/:id` and `foo/:id`. In the following example, both results
-will match and return the same leaf.
+will match and return the same payload.
 
 ```crystal
 tree.add "/products(/free)/:id", :product
 
 if result = tree.find "/products/1234"
   puts result.params["id"]? # => "1234"
-  puts result.leaf # => :product
+  puts result.payload # => :product
 end
 
 if result = tree.find "/products/free/1234"
   puts result.params["id"]? # => "1234"
-  puts result.leaf # => :product
+  puts result.payload # => :product
 end
 ```
 
@@ -101,14 +101,14 @@ experience for the implementer, the `.search` method will return a list of resul
 Alternatively, you can interact with the results by providing a block.
 
 ```crystal
-matching_leaf = nil
+matching_payload = nil
 @tree.search(path) do |result|
-  unless matching_leaf
+  unless matching_payload
     context.request.path_params = result.params
-    matching_leaf = result.leaves.find do |leaf|
-      leaf.matches_constraints? context.request
+    matching_payload = result.payloads.find do |payload|
+      payload.matches_constraints? context.request
     end
-    matching_leaf.try &.call(context)
+    matching_payload.try &.call(context)
   end
 end
 ```
@@ -116,9 +116,9 @@ end
 ### Multiple Leaves
 
 In order to allow for a more flexible experience for the implementer, this
-implementation of radix will not error if a multiple leaves are added at the
-same path/key. You can either call the `.leaf` method to grab the first leaf,
-or you can use the `.leaves` method, which will return all the leaves.
+implementation of radix will not error if a multiple payloads are added at the
+same path/key. You can either call the `.payload` method to grab the first payload,
+or you can use the `.payloads` method, which will return all the payloads.
 
 ### Shared Keys
 
@@ -150,7 +150,7 @@ tree.add "/categories/:category", :category # listing of posts under each catego
 ```
 ## Roadmap
 
-* [X] Support multiple leaves at the same level in the tree.
+* [X] Support multiple payloads at the same level in the tree.
 * [X] Return multiple matches when searching the tree.
 * [X] Support optionals in the key path.
 * [ ] Overcome shared key caveat.

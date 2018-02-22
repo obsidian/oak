@@ -1,11 +1,19 @@
 class Oak::Tree(T)
   # :nodoc:
   struct Context(T)
-    getter branches = [] of Tree(T)
-    getter leaves = [] of T
+    getter children = [] of Tree(T)
+    getter payloads = [] of T
 
-    def initialize(branch : Tree(T)? = nil)
-      branches << branch if branch
+    def initialize(child : Tree(T)? = nil)
+      children << child if child
+    end
+
+    def payload
+      payloads.first
+    end
+
+    def payload?
+      payloads.first?
     end
   end
 
@@ -28,19 +36,19 @@ class Oak::Tree(T)
 
   @root = false
 
-  # The key of the current tree branch
+  # The key of the current tree child
   getter key : String = ""
   protected getter priority : Int32 = 0
   protected getter context = Context(T).new
   protected getter kind = Kind::Normal
 
   # :nodoc:
-  delegate branches, leaves, to: @context
+  delegate payloads, payload, payload?, children, to: @context
 
   # :nodoc:
   delegate normal?, named?, glob?, to: kind
   # :nodoc:
-  delegate sort!, to: branches
+  delegate sort!, to: children
 
   # Iterate over each result
   delegate each, to: results
@@ -57,7 +65,7 @@ class Oak::Tree(T)
   # :nodoc:
   def initialize(@key : String, payload : T? = nil)
     @priority = compute_priority
-    leaves << payload if payload
+    payloads << payload if payload
   end
 
   # :nodoc:
@@ -80,13 +88,13 @@ class Oak::Tree(T)
   end
 
   # :nodoc:
-  def leaves?
-    !leaves.empty?
+  def payloads?
+    !payloads.empty?
   end
 
   # :nodoc:
   def placeholder?
-    @root && key.empty? && leaves.empty?
+    @root && key.empty? && payloads.empty?
   end
 
   # Lists all the results possible within the entire tree.
@@ -123,7 +131,7 @@ class Oak::Tree(T)
   protected def add_path(path : String, payload : T)
     if placeholder?
       @key = path
-      leaves << payload
+      payloads << payload
       return self
     end
 
@@ -133,8 +141,8 @@ class Oak::Tree(T)
       new_key = analyzer.remaining_path
 
       # Find a child key that matches the remaning path
-      matching_child = branches.find do |branch|
-        branch.key[0]? == new_key[0]?
+      matching_child = children.find do |child|
+        child.key[0]? == new_key[0]?
       end
 
       if matching_child
@@ -145,13 +153,13 @@ class Oak::Tree(T)
         matching_child.add_path new_key, payload
       else
         # add a new Tree with the remaining path
-        branches << Tree(T).new(new_key, payload)
+        children << Tree(T).new(new_key, payload)
       end
 
       # Reprioritze Tree
       sort!
     elsif analyzer.exact_match?
-      leaves << payload
+      payloads << payload
     elsif analyzer.split_on_key?
       # Readjust the key of this Tree
       self.key = analyzer.matched_key
@@ -161,10 +169,10 @@ class Oak::Tree(T)
       # Determine if the path continues
       if analyzer.remaining_path?
         # Add a new Tree with the remaining_path
-        branches << Tree(T).new(analyzer.remaining_path, payload)
+        children << Tree(T).new(analyzer.remaining_path, payload)
       else
         # Insert the payload
-        leaves << payload
+        payloads << payload
       end
 
       # Reprioritze Tree
@@ -176,19 +184,19 @@ class Oak::Tree(T)
     key[0] == ':' || key[0] == '*'
   end
 
-  protected def dynamic_branches?
-    branches.any? &.dynamic?
+  protected def dynamic_children?
+    children.any? &.dynamic?
   end
 
-  protected def dynamic_branches
-    branches.select &.dynamic?
+  protected def dynamic_children
+    children.select &.dynamic?
   end
 
   protected def each_result(result = Result(T).new, &block : Result(T) -> Void) : Void
-    result = result.use self, &block if leaves?
-    branches.each do |branch|
+    result = result.use self, &block if payloads?
+    children.each do |child|
       result = result.track(self) do |outer_result|
-        branch.each_result(outer_result) do |inner_result|
+        child.each_result(outer_result) do |inner_result|
           block.call(inner_result)
         end
       end
@@ -235,11 +243,11 @@ class Oak::Tree(T)
       if walker.path_trailing_slash_end?
         result = result.use(self, &block)
       end
-      branches.each do |branch|
+      children.each do |child|
         remaining_path = walker.remaining_path
-        if branch.should_walk?(remaining_path)
+        if child.should_walk?(remaining_path)
           result = result.track self do |outer_result|
-            branch.search(remaining_path, outer_result, &block)
+            child.search(remaining_path, outer_result, &block)
           end
         end
       end
@@ -260,11 +268,11 @@ class Oak::Tree(T)
       end
     end
 
-    if dynamic_branches?
-      dynamic_branches.each do |branch|
-        if branch.should_walk?(path)
+    if dynamic_children?
+      dynamic_children.each do |child|
+        if child.should_walk?(path)
           result = result.track self do |outer_result|
-            branch.search(path, outer_result, &block)
+            child.search(path, outer_result, &block)
           end
         end
       end
@@ -280,8 +288,8 @@ class Oak::Tree(T)
   end
 
   protected def visualize(depth : Int32, io : IO)
-    io.puts "  " * depth + "⌙ " + key + (leaves? ? " (leaves: #{leaves.size})" : "")
-    branches.each &.visualize(depth + 1, io)
+    io.puts "  " * depth + "⌙ " + key + (payloads? ? " (payloads: #{payloads.size})" : "")
+    children.each &.visualize(depth + 1, io)
   end
 
   private def compute_priority

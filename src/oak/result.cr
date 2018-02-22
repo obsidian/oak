@@ -4,8 +4,8 @@ struct Oak::Result(T)
   # The named params found in the result.
   getter params = {} of String => String
 
-  # The matching leaves of the result.
-  getter leaves = [] of T
+  # The matching payloads of the result.
+  getter payloads = [] of T
 
   def initialize
   end
@@ -14,12 +14,16 @@ struct Oak::Result(T)
   end
 
   def found?
-    !leaves.empty?
+    !payloads.empty?
   end
 
-  # Returns the first leaf in the result.
-  def leaf
-    leaves.first
+  def payload?
+    payloads.first?
+  end
+
+  # Returns the first payload in the result.
+  def payload
+    payloads.first
   end
 
   # The full resulting key.
@@ -31,35 +35,30 @@ struct Oak::Result(T)
     end
   end
 
-  # alias for `#leaf`.
-  def payload
-    leaf
-  end
-
   # :nodoc:
-  def track(branch : Tree(T))
-    @nodes << branch
+  def track(node : Tree(T))
+    @nodes << node
     self
   end
 
   # :nodoc:
-  def track(branch : Tree(T), &block : Result(T) -> _)
+  def track(node : Tree(T), &block : Result(T) -> _)
     self.class.new(@nodes.dup, @params.dup).tap do
-      block.call track(branch)
+      block.call track(node)
     end
   end
 
   # :nodoc:
-  def use(branch : Tree(T))
-    track branch
-    @leaves.replace branch.leaves
+  def use(node : Tree(T))
+    track node
+    @payloads.replace node.payloads
     self
   end
 
   # :nodoc:
-  def use(branch : Tree(T), &block : Result(T) -> _)
+  def use(node : Tree(T), &block : Result(T) -> _)
     self.class.new(@nodes.dup, @params.dup).tap do
-      block.call use(branch)
+      block.call use(node)
     end
   end
 end
