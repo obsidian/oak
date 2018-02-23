@@ -29,6 +29,10 @@ struct Oak::Analyzer
     path_reader.string.byte_slice(0, path_reader.pos)
   end
 
+  def path_reader_at_zero_pos?
+    path_reader.pos == 0
+  end
+
   def remaining_key
     key.byte_slice(path_reader.pos)
   end
@@ -59,10 +63,6 @@ struct Oak::Analyzer
 
   private def path_pos_at_end_of_key?
     path_reader.pos == key.bytesize
-  end
-
-  private def path_reader_at_zero_pos?
-    path_reader.pos == 0
   end
 
   private def remaining_key?

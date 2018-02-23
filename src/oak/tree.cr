@@ -94,7 +94,7 @@ class Oak::Tree(T)
 
   # :nodoc:
   def placeholder?
-    @root && key.empty? && payloads.empty?
+    @root && key.empty? && size == 0
   end
 
   # Lists all the results possible within the entire tree.
@@ -136,6 +136,11 @@ class Oak::Tree(T)
     end
 
     analyzer = Analyzer.new(path: path, key: key)
+
+    if !key.empty? && analyzer.path_reader_at_zero_pos?
+      @context = Context.new(Tree(T).new(@key, @context))
+      @key = ""
+    end
 
     if analyzer.split_on_path?
       new_key = analyzer.remaining_path
