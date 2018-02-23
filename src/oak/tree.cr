@@ -77,7 +77,7 @@ class Oak::Tree(T)
 
   # Adds a path to the tree.
   def add(path : String, payload : T)
-    OptionalsParser.parse(path).each do |path|
+    OptionalsParser.parse(path).map do |path|
       add_path path, payload
     end
   end
@@ -142,7 +142,7 @@ class Oak::Tree(T)
       @key = ""
     end
 
-    if analyzer.split_on_path?
+    node = if analyzer.split_on_path?
       new_key = analyzer.remaining_path
 
       # Find a child key that matches the remaning path
@@ -158,31 +158,31 @@ class Oak::Tree(T)
         matching_child.add_path new_key, payload
       else
         # add a new Tree with the remaining path
-        children << Tree(T).new(new_key, payload)
+        Tree(T).new(new_key, payload).tap { |node| children << node }
       end
-
-      # Reprioritze Tree
-      sort!
     elsif analyzer.exact_match?
       payloads << payload
+      self
     elsif analyzer.split_on_key?
       # Readjust the key of this Tree
       self.key = analyzer.matched_key
 
-      @context = Context.new(Tree(T).new(analyzer.remaining_key, @context))
+      Tree(T).new(analyzer.remaining_key, @context).tap do |node|
+        @context = Context.new(node)
 
-      # Determine if the path continues
-      if analyzer.remaining_path?
-        # Add a new Tree with the remaining_path
-        children << Tree(T).new(analyzer.remaining_path, payload)
-      else
-        # Insert the payload
-        payloads << payload
+        # Determine if the path continues
+        if analyzer.remaining_path?
+          # Add a new Tree with the remaining_path
+          children << Tree(T).new(analyzer.remaining_path, payload)
+        else
+          # Insert the payload
+          payloads << payload
+        end
       end
-
-      # Reprioritze Tree
-      sort!
     end
+
+    sort!
+    node || self
   end
 
   protected def dynamic?
