@@ -116,8 +116,10 @@ class Oak::Tree(T)
   end
 
   # Searches the Tree and yields each result to the block.
-  def search(path, &block : Result(T) -> _)
-    search(path, Result(T).new, &block)
+  def search(path)
+    search(path, Result(T).new) do |r|
+      yield r
+    end
   end
 
   # Returns a string visualization of the Radix tree
@@ -197,12 +199,17 @@ class Oak::Tree(T)
     children.select &.dynamic?
   end
 
-  protected def each_result(result = Result(T).new, &block : Result(T) -> Void) : Void
-    result = result.use self, &block if payloads?
+  protected def each_result(result = Result(T).new) : Void
+    if payloads?
+      result = result.use(self) do |r|
+        yield r
+      end
+    end
+
     children.each do |child|
       result = result.track(self) do |outer_result|
         child.each_result(outer_result) do |inner_result|
-          block.call(inner_result)
+          yield inner_result
         end
       end
     end
@@ -213,7 +220,7 @@ class Oak::Tree(T)
     @priority = compute_priority
   end
 
-  protected def search(path, result : Result(T), &block : Result(T) -> _) : Nil
+  protected def search(path, result : Result(T)) : Nil
     walker = Walker.new(path: path, key: key)
 
     walker.while_matching do
@@ -222,7 +229,9 @@ class Oak::Tree(T)
         name = walker.key_slice(walker.key_pos + 1)
         value = walker.remaining_path
         result.params[name] = value unless name.empty?
-        result = result.use(self, &block)
+        result = result.use(self) do |r|
+          yield r
+        end
         break
       when ':'
         key_size = walker.key_param_size
@@ -241,18 +250,24 @@ class Oak::Tree(T)
     end
 
     if walker.end?
-      result = result.use(self, &block)
+      result = result.use(self) do |r|
+        yield r
+      end
     end
 
     if walker.path_continues?
       if walker.path_trailing_slash_end?
-        result = result.use(self, &block)
+        result = result.use(self) do |r|
+          yield r
+        end
       end
       children.each do |child|
         remaining_path = walker.remaining_path
         if child.should_walk?(remaining_path)
           result = result.track self do |outer_result|
-            child.search(remaining_path, outer_result, &block)
+            child.search(remaining_path, outer_result) do |r|
+              yield r
+            end
           end
         end
       end
@@ -260,7 +275,9 @@ class Oak::Tree(T)
 
     if walker.key_continues?
       if walker.key_trailing_slash_end?
-        result = result.use(self, &block)
+        result = result.use(self) do |r|
+          yield r
+        end
       end
 
       if walker.catch_all?
@@ -269,7 +286,9 @@ class Oak::Tree(T)
 
         result.params[name] = ""
 
-        result = result.use(self, &block)
+        result = result.use(self) do |r|
+          yield r
+        end
       end
     end
 
@@ -277,7 +296,9 @@ class Oak::Tree(T)
       dynamic_children.each do |child|
         if child.should_walk?(path)
           result = result.track self do |outer_result|
-            child.search(path, outer_result, &block)
+            child.search(path, outer_result) do |r|
+              yield r
+            end
           end
         end
       end

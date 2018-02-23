@@ -42,9 +42,9 @@ struct Oak::Result(T)
   end
 
   # :nodoc:
-  def track(node : Tree(T), &block : Result(T) -> _)
+  def track(node : Tree(T))
     self.class.new(@nodes.dup, @params.dup).tap do
-      block.call track(node)
+      yield track(node)
     end
   end
 
@@ -56,9 +56,9 @@ struct Oak::Result(T)
   end
 
   # :nodoc:
-  def use(node : Tree(T), &block : Result(T) -> _)
+  def use(node : Tree(T))
     self.class.new(@nodes.dup, @params.dup).tap do
-      block.call use(node)
+      yield use(node)
     end
   end
 end
