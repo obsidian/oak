@@ -12,7 +12,7 @@ module Oak
 
       context "with a payload" do
         it "returns true" do
-          tree = Tree(Symbol).new("/", :root)
+          tree = Node(Symbol).new("/", :root)
           result = Result(Symbol).new
           result.use tree
 
@@ -31,7 +31,7 @@ module Oak
 
       context "given one used tree" do
         it "returns the tree key" do
-          tree = Tree(Symbol).new("/", :root)
+          tree = Node(Symbol).new("/", :root)
           result = Result(Symbol).new
           result.use tree
 
@@ -41,8 +41,8 @@ module Oak
 
       context "using multiple trees" do
         it "combines the tree keys" do
-          tree1 = Tree(Symbol).new("/", :root)
-          tree2 = Tree(Symbol).new("about", :about)
+          tree1 = Node(Symbol).new("/", :root)
+          tree2 = Node(Symbol).new("about", :about)
           result = Result(Symbol).new
           result.use tree1
           result.use tree2
@@ -54,7 +54,7 @@ module Oak
 
     describe "#use" do
       it "uses the tree payload" do
-        tree = Tree(Symbol).new("/", :root)
+        tree = Node(Symbol).new("/", :root)
         result = Result(Symbol).new
         result.payloads.empty?.should_not be_falsey
 
@@ -64,7 +64,7 @@ module Oak
       end
 
       it "allow not to assign payload" do
-        tree = Tree(Symbol).new("/", :root)
+        tree = Node(Symbol).new("/", :root)
         result = Result(Symbol).new
         result.payloads.empty?.should_not be_falsey
 
