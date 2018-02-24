@@ -95,15 +95,8 @@ struct Oak::Tree(T)
           yield r
         end
       end
-      node.children.each do |child|
-        remaining_path = walker.remaining_path
-        if child.should_walk?(remaining_path)
-          result = result.track node do |outer_result|
-            search(child, remaining_path, outer_result) do |r|
-              yield r
-            end
-          end
-        end
+      walk_children(node, node.dynamic_children, walker.remaining_path, result) do |r|
+        yield r
       end
     end
 
@@ -126,16 +119,23 @@ struct Oak::Tree(T)
       end
     end
 
-    if dynamic_children?
-      dynamic_children.each do |child|
-        if child.should_walk?(path)
-          result = result.track node do |outer_result|
-            search(child, path, outer_result) do |r|
-              yield r
-            end
+    if node.dynamic_children?
+      result = walk_children(node, node.dynamic_children, path, result) do |r|
+        yield r
+      end
+    end
+  end
+
+  def walk_children(node, children, path, result)
+    children.each do |child|
+      if child.should_walk?(path)
+        result = result.track node do |outer_result|
+          search(child, path, outer_result) do |r|
+            yield r
           end
         end
       end
     end
+    result
   end
 end
