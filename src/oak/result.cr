@@ -43,7 +43,7 @@ struct Oak::Result(T)
 
   # :nodoc:
   def track(node : Node(T))
-    self.class.new(@nodes.dup, @params.dup).tap do
+    clone.tap do
       yield track(node)
     end
   end
@@ -57,8 +57,12 @@ struct Oak::Result(T)
 
   # :nodoc:
   def use(node : Node(T))
-    self.class.new(@nodes.dup, @params.dup).tap do
+    clone.tap do
       yield use(node)
     end
+  end
+
+  private def clone
+    self.class.new(@nodes.dup, @params.dup)
   end
 end

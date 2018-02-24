@@ -3,7 +3,7 @@ description: Another radix tree implementation for crystal-lang
 authors:
   - jwaldrip <jason@waldrip.net>
 crystal: 0.23.1
-version: 2.0.0
+version: 2.0.1
 license: MIT
 development_dependencies:
   radix:

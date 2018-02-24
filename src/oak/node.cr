@@ -10,6 +10,16 @@ class Oak::Node(T)
       children << child if child
     end
 
+    # Returns true of there are associated payloads
+    def payloads?
+      !payloads.empty?
+    end
+
+    # Returns true of there are associated children
+    def children?
+      !children.empty?
+    end
+
     def payload
       payloads.first
     end
@@ -44,7 +54,7 @@ class Oak::Node(T)
   protected getter kind = Kind::Normal
 
   # :nodoc:
-  delegate payloads, payload, payload?, children, to: @context
+  delegate payloads, payloads?, payload, payload?, children, children?, to: @context
 
   # :nodoc:
   delegate normal?, named?, glob?, to: kind
@@ -81,12 +91,7 @@ class Oak::Node(T)
   end
 
   # :nodoc:
-  def payloads?
-    !payloads.empty?
-  end
-
-  # :nodoc:
-  def placeholder?
+  private def placeholder?
     @root && key.empty? && payloads.empty? && children.empty?
   end
 

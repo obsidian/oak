@@ -154,7 +154,6 @@ module Oak
         tree = Node(Symbol).new
         tree.should be_a(Node(Symbol))
         tree.payloads?.should be_falsey
-        tree.placeholder?.should be_true
       end
     end
 
@@ -164,7 +163,6 @@ module Oak
           tree = Node(Symbol).new
           tree.add "/abc", :abc
           tree.should be_a(Node(Symbol))
-          tree.placeholder?.should be_false
           tree.payloads?.should be_truthy
           tree.payloads.should contain(:abc)
         end
