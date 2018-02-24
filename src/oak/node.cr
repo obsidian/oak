@@ -118,43 +118,43 @@ class Oak::Node(T)
     end
 
     node = if analyzer.split_on_path?
-      new_key = analyzer.remaining_path
+             new_key = analyzer.remaining_path
 
-      # Find a child key that matches the remaning path
-      matching_child = children.find do |child|
-        child.key[0]? == new_key[0]?
-      end
+             # Find a child key that matches the remaning path
+             matching_child = children.find do |child|
+               child.key[0]? == new_key[0]?
+             end
 
-      if matching_child
-        if matching_child.key[0]? == ':' && new_key[0]? == ':' && !same_key?(new_key, matching_child.key)
-          raise SharedKeyError.new(new_key, matching_child.key)
-        end
-        # add the path & payload within the child Node
-        matching_child.add_path new_key, payload
-      else
-        # add a new Node with the remaining path
-        Node(T).new(new_key, payload).tap { |node| children << node }
-      end
-    elsif analyzer.exact_match?
-      payloads << payload
-      self
-    elsif analyzer.split_on_key?
-      # Readjust the key of this Node
-      self.key = analyzer.matched_key
+             if matching_child
+               if matching_child.key[0]? == ':' && new_key[0]? == ':' && !same_key?(new_key, matching_child.key)
+                 raise SharedKeyError.new(new_key, matching_child.key)
+               end
+               # add the path & payload within the child Node
+               matching_child.add_path new_key, payload
+             else
+               # add a new Node with the remaining path
+               Node(T).new(new_key, payload).tap { |node| children << node }
+             end
+           elsif analyzer.exact_match?
+             payloads << payload
+             self
+           elsif analyzer.split_on_key?
+             # Readjust the key of this Node
+             self.key = analyzer.matched_key
 
-      Node(T).new(analyzer.remaining_key, @context).tap do |node|
-        @context = Context.new(node)
+             Node(T).new(analyzer.remaining_key, @context).tap do |node|
+               @context = Context.new(node)
 
-        # Determine if the path continues
-        if analyzer.remaining_path?
-          # Add a new Node with the remaining_path
-          children << Node(T).new(analyzer.remaining_path, payload)
-        else
-          # Insert the payload
-          payloads << payload
-        end
-      end
-    end
+               # Determine if the path continues
+               if analyzer.remaining_path?
+                 # Add a new Node with the remaining_path
+                 children << Node(T).new(analyzer.remaining_path, payload)
+               else
+                 # Insert the payload
+                 payloads << payload
+               end
+             end
+           end
 
     sort!
     node || self

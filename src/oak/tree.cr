@@ -4,7 +4,7 @@ struct Oak::Tree(T)
   # Iterate over each result
   delegate each, to: results
 
-  @root = Oak::Node(T).new
+  getter root = Oak::Node(T).new
 
   delegate visualize, add, to: @root
 
