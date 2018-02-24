@@ -32,29 +32,22 @@ struct Oak::Tree(T)
   end
 
   # Searches the Node and yields each result to the block.
-  def search(path)
-    search(@root, path, Result(T).new) do |r|
-      yield r
-    end
+  def search(path, &block : Result(T) -> _)
+    search(@root, path, Result(T).new, &block)
   end
 
-  protected def each_result(result = Result(T).new) : Void
-    if payloads?
-      result = result.use(self) do |r|
-        yield r
-      end
-    end
-
+  protected def each_result(result = Result(T).new, &block : Result(T) -> Void) : Void
+    result = result.use self, &block if payloads?
     children.each do |child|
       result = result.track(self) do |outer_result|
         child.each_result(outer_result) do |inner_result|
-          yield inner_result
+          block.call(inner_result)
         end
       end
     end
   end
 
-  protected def search(node, path, result : Result(T)) : Nil
+  protected def search(node, path, result : Result(T), &block : Result(T) -> _) : Nil
     walker = Walker.new(path: path, key: node.key)
 
     walker.while_matching do
@@ -63,9 +56,7 @@ struct Oak::Tree(T)
         name = walker.key_slice(walker.key_pos + 1)
         value = walker.remaining_path
         result.params[name] = value unless name.empty?
-        result = result.use(node) do |r|
-          yield r
-        end
+        result = result.use(node, &block)
         break
       when ':'
         key_size = walker.key_param_size
@@ -84,27 +75,26 @@ struct Oak::Tree(T)
     end
 
     if walker.end?
-      result = result.use(node) do |r|
-        yield r
-      end
+      result = result.use(node, &block)
     end
 
     if walker.path_continues?
       if walker.path_trailing_slash_end?
-        result = result.use(node) do |r|
-          yield r
-        end
+        result = result.use(node, &block)
       end
-      walk_children(node, node.dynamic_children, walker.remaining_path, result) do |r|
-        yield r
+      node.children.each do |child|
+        remaining_path = walker.remaining_path
+        if child.should_walk?(remaining_path)
+          result = result.track node do |outer_result|
+            search(child, remaining_path, outer_result, &block)
+          end
+        end
       end
     end
 
     if walker.key_continues?
       if walker.key_trailing_slash_end?
-        result = result.use(node) do |r|
-          yield r
-        end
+        result = result.use(node, &block)
       end
 
       if walker.catch_all?
@@ -113,29 +103,18 @@ struct Oak::Tree(T)
 
         result.params[name] = ""
 
-        result = result.use(node) do |r|
-          yield r
-        end
+        result = result.use(node, &block)
       end
     end
 
     if node.dynamic_children?
-      result = walk_children(node, node.dynamic_children, path, result) do |r|
-        yield r
-      end
-    end
-  end
-
-  def walk_children(node, children, path, result)
-    children.each do |child|
-      if child.should_walk?(path)
-        result = result.track node do |outer_result|
-          search(child, path, outer_result) do |r|
-            yield r
+      node.dynamic_children.each do |child|
+        if child.should_walk?(path)
+          result = result.track node do |outer_result|
+            search(child, path, outer_result, &block)
           end
         end
       end
     end
-    result
   end
 end
