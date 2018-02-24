@@ -1,5 +1,5 @@
 struct Oak::Result(T)
-  @nodes = [] of Tree(T)
+  @nodes = [] of Node(T)
 
   # The named params found in the result.
   getter params = {} of String => String
@@ -36,29 +36,33 @@ struct Oak::Result(T)
   end
 
   # :nodoc:
-  def track(node : Tree(T))
+  def track(node : Node(T))
     @nodes << node
     self
   end
 
   # :nodoc:
-  def track(node : Tree(T), &block : Result(T) -> _)
-    self.class.new(@nodes.dup, @params.dup).tap do
-      block.call track(node)
+  def track(node : Node(T))
+    clone.tap do
+      yield track(node)
     end
   end
 
   # :nodoc:
-  def use(node : Tree(T))
+  def use(node : Node(T))
     track node
     @payloads.replace node.payloads
     self
   end
 
   # :nodoc:
-  def use(node : Tree(T), &block : Result(T) -> _)
-    self.class.new(@nodes.dup, @params.dup).tap do
-      block.call use(node)
+  def use(node : Node(T))
+    clone.tap do
+      yield use(node)
     end
+  end
+
+  private def clone
+    self.class.new(@nodes.dup, @params.dup)
   end
 end
