@@ -67,16 +67,6 @@ struct Oak::Searcher(T)
         @result = result.use(node, &block)
       end
     end
-
-    # if node.dynamic_children?
-    #   node.dynamic_children.each do |child|
-    #     if child.should_walk?(path)
-    #       result = result.track node do |outer_result|
-    #         self.class.search(child, path, outer_result, &block)
-    #       end
-    #     end
-    #   end
-    # end
   end
 
   protected def walk!
