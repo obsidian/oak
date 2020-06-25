@@ -10,10 +10,10 @@ struct Oak::Searcher(T)
   getter! result : Result(T)
 
   def self.search(node, path, result : Result(T), &block : Result(T) -> _)
-    new(key: node.key, path: path, result: result).search(&block)
+    new(key: node.key, path: path, result: result, node: node).search(&block)
   end
 
-  def initialize(*, key : String, path : String, @result = nil)
+  def initialize(*, key : String, path : String, @result = nil, @node = nil)
     @key = KeyWalker.new(key)
     @path = PathWalker.new(path)
   end
@@ -88,11 +88,6 @@ struct Oak::Searcher(T)
         result.params[name] = value unless name.empty?
       when ':'
         result.params[key.name] = path.value
-      when '('
-        s = self
-        key.pos, path.pos = s.walk!
-      when ')'
-        break
       else
         advance
       end

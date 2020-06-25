@@ -15,27 +15,36 @@ abstract struct Oak::Walker
     end
 
     def size_until_marker(skip_markers = 0)
-      walker = self
+      original_pos = pos
   
       # walk until we reach the marker or end
-      while walker.has_next?
-        break if walker.marker? && (skip_markers -= 1) < 0
-        walker.next_char
+      while has_next?
+        break if marker? && (skip_markers -= 1) < 0
+        next_char
       end
+
+      # Calc the size
+      size = pos - original_pos
+
+      # Reset the pos
+      self.pos = original_pos
   
       # return the size
-      return walker.pos - self.pos
+      return size
     end
 
     def marker_count
-      walker = self
+      original_pos = pos
       count = 0
   
       # count the markers until we reach the end
-      while reader.has_next?
-        count += 1 if walker.marker?
-        reader.next_char
+      while has_next?
+        count += 1 if marker?
+        next_char
       end
+
+      # Reset the pos
+      self.pos = original_pos
   
       count
     end

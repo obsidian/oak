@@ -2,13 +2,14 @@ require "./walker"
 
 struct Oak::KeyWalker < Oak::Walker
   def dynamic_char?
-    {'*', ':', '(', ')'}.includes? reader.current_char
+    {'*', ':'}.includes? reader.current_char
   end
 
   def name
+    next_char
     size = size_until_marker
-    slice(pos + 1, size - 1).tap do
-      pos = size
+    slice(pos, size).tap do |name|
+      self.pos += size
     end
   end
 
