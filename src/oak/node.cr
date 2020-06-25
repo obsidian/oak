@@ -178,7 +178,7 @@ class Oak::Node(T)
   end
 
   protected def shared_key?(path)
-    Walker.new(path: path, key: key).shared_key?
+    Searcher(T).new(path: path, key: key).shared_key?
   end
 
   protected def should_walk?(path)

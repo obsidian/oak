@@ -1,4 +1,4 @@
-struct Oak::Result(T)
+class Oak::Result(T)
   @nodes = [] of Node(T)
 
   # The named params found in the result.

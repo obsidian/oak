@@ -1,156 +1,71 @@
 # :nodoc:
-struct Oak::Walker
-  getter path : String
-  getter key : String
-  private getter key_reader : Char::Reader
-  private getter path_reader : Char::Reader
+abstract struct Oak::Walker
+    private getter bytesize : Int32
+    private getter reader : Char::Reader
 
-  def self.detect_param_size(reader)
-    # save old position
-    old_pos = reader.pos
+    delegate next_char, pos, current_char, has_next?, peek_next_char, to: reader
+  
+    def initialize(str : String)
+      @bytesize = str.bytesize
+      @reader = Char::Reader.new(str)
+    end
 
-    # move forward until '/' or EOL is detected
-    while reader.has_next?
-      break if reader.current_char == '/'
+    def pos=(i)
+      reader.pos = i
+    end
+
+    def size_until_marker(skip_markers = 0)
+      walker = self
+  
+      # walk until we reach the marker or end
+      while walker.has_next?
+        break if walker.marker? && (skip_markers -= 1) < 0
+        walker.next_char
+      end
+  
+      # return the size
+      return walker.pos - self.pos
+    end
+
+    def marker_count
+      walker = self
+      count = 0
+  
+      # count the markers until we reach the end
+      while reader.has_next?
+        count += 1 if walker.marker?
+        reader.next_char
+      end
+  
+      count
+    end
+  
+    def end?
+      !reader.has_next?
+    end
+  
+    def slice(*args)
+      reader.string.byte_slice(*args)
+    end
+  
+    def trailing_slash_end?
+      reader.pos + 1 == bytesize && current_char == '/'
+    end
+  
+    def peek_char
+      reader.peek_next_char
+    end
+  
+    def marker?
+      current_char == '/'
+    end
+  
+    def next_char
       reader.next_char
     end
 
-    # calculate the size
-    size = reader.pos - old_pos
-
-    # restore old position
-    reader.pos = old_pos
-
-    size
-  end
-
-  def initialize(*, @key : String, @path : String)
-    @key_reader = Char::Reader.new(key)
-    @path_reader = Char::Reader.new(path)
-  end
-
-  def advance
-    next_key_char
-    next_path_char
-  end
-
-  def catch_all?
-    key_reader.pos < key.bytesize && (
-      (key_char == '/' && peek_key_char == '*') || key_char == '*'
-    )
-  end
-
-  def dynamic_key_char?
-    key_reader.current_char == '*' || key_reader.current_char == ':'
-  end
-
-  def end?
-    !path_reader.has_next? && !key_reader.has_next?
-  end
-
-  def key_char
-    key_reader.current_char
-  end
-
-  def key_continues?
-    key_reader.has_next?
-  end
-
-  def key_param_size
-    self.class.detect_param_size(key_reader)
-  end
-
-  def key_pos
-    key_reader.pos
-  end
-
-  def key_pos=(value)
-    key_reader.pos = value
-  end
-
-  def key_slice(*args)
-    key_reader.string.byte_slice(*args)
-  end
-
-  def key_trailing_slash_end?
-    key_reader.pos + 1 == key.bytesize && key_reader.current_char == '/'
-  end
-
-  def path_char
-    path_reader.current_char
-  end
-
-  def path_continues?
-    path_reader.has_next?
-  end
-
-  def path_trailing_slash_end?
-    key.bytesize > 0 && path_reader.pos + 1 == path.bytesize && path_reader.current_char == '/'
-  end
-
-  def peek_key_char
-    key_reader.peek_next_char
-  end
-
-  def marker?
-    key_char == '/' || key_char == ':' || key_char == '*'
-  end
-
-  def matching_chars?
-    path_reader.current_char == key_reader.current_char
-  end
-
-  def next_key_char
-    key_reader.next_char
-  end
-
-  def next_path_char
-    path_reader.next_char
-  end
-
-  def path_param_size
-    self.class.detect_param_size(path_reader)
-  end
-
-  def path_slice(*args)
-    path_reader.string.byte_slice(*args)
-  end
-
-  def path_pos
-    path_reader.pos
-  end
-
-  def path_pos=(value)
-    path_reader.pos = value
-  end
-
-  def remaining_path
-    path_slice path_pos
-  end
-
-  def shared_key?
-    if (path_reader.current_char != key_reader.current_char) && marker?
-      return false
-    end
-
-    different = false
-
-    while (path_continues? && path_char != '/') && (key_continues? && !marker?)
-      if path_reader.current_char != key_reader.current_char
-        different = true
-        break
-      end
-
-      path_reader.next_char
-      key_reader.next_char
-    end
-
-    !different && (!key_reader.has_next? || marker?)
-  end
-
-  def while_matching
-    while key_reader.has_next? && path_reader.has_next? && (dynamic_key_char? || matching_chars?)
-      yield
+    def remaining
+      slice pos
     end
   end
-end
+  
