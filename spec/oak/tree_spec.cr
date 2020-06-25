@@ -356,6 +356,31 @@ module Oak
           results.first.params["id"].should eq("20")
         end
       end
+
+      context "dealing with mutliple wilcards" do
+        it "finds a matching path" do
+          tree = Tree(Symbol).new
+          tree.add "/*foo/bar/*baz", :one
+
+          results = tree.search "/one/bar/two"
+          results.empty?.should be_false
+          results.first.key.should eq("/*foo/bar/*baz")
+          results.first.params["foo"].should eq("one")
+          results.first.params["baz"].should eq("two")
+
+          results = tree.search "/one/bar/baz/two"
+          results.empty?.should be_false
+          results.first.key.should eq("/*foo/bar/*baz")
+          results.first.params["foo"].should eq("one")
+          results.first.params["baz"].should eq("baz/two")
+
+          results = tree.search "/one/two/bar/baz/three"
+          results.empty?.should be_false
+          results.first.key.should eq("/*foo/bar/*baz")
+          results.first.params["foo"].should eq("one/two")
+          results.first.params["baz"].should eq("baz/three")
+        end
+      end
     end
   end
 end
