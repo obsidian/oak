@@ -43,9 +43,7 @@ struct Oak::Searcher(T)
     end
 
     if path.has_next?
-      if path.trailing_slash_end?
-        @result = result.use(node, &block)
-      end
+      @result = result.use(node, &block) if path.trailing_slash_end?
       node.children.each do |child|
         remaining_path = path.remaining
         if child.should_walk?(remaining_path)
@@ -82,7 +80,6 @@ struct Oak::Searcher(T)
         advance
       end
     end
-    return {key.pos, path.pos}
   end
 
   private def advance
