@@ -380,6 +380,23 @@ module Oak
           results.first.params["foo"].should eq("one/two")
           results.first.params["baz"].should eq("baz/three")
         end
+
+        context "when a key shares a path with a non param" do
+          it "finds a matching path" do
+            tree = Tree(Symbol).new
+            tree.add "/foo/:id", :one
+            tree.add "/foo/bar/baz", :one
+
+            results = tree.search "/foo/1"
+            results.empty?.should be_false
+            results.first.key.should eq("/foo/:id")
+            results.first.params["id"].should eq("1")
+
+            results = tree.search "/foo/bar/baz"
+            results.empty?.should be_false
+            results.first.key.should eq("/foo/bar/baz")
+          end
+        end
       end
     end
   end

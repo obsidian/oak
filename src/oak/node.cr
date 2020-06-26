@@ -1,41 +1,9 @@
 require "./result"
+require "./context"
+require "./shared_key_error"
 
+# :nodoc:
 class Oak::Node(T)
-  # :nodoc:
-  struct Context(T)
-    getter children = [] of Node(T)
-    getter payloads = [] of T
-
-    def initialize(child : Node(T)? = nil)
-      children << child if child
-    end
-
-    # Returns true of there are associated payloads
-    def payloads?
-      !payloads.empty?
-    end
-
-    # Returns true of there are associated children
-    def children?
-      !children.empty?
-    end
-
-    def payload
-      payloads.first
-    end
-
-    def payload?
-      payloads.first?
-    end
-  end
-
-  # The error class that is returned in the case of a shared key conflict.
-  class SharedKeyError < Exception
-    def initialize(new_key, existing_key)
-      super("Tried to place key '#{new_key}' at same level as '#{existing_key}'")
-    end
-  end
-
   # :nodoc:
   enum Kind : UInt8
     Normal
@@ -95,7 +63,6 @@ class Oak::Node(T)
     @root && key.empty? && payloads.empty? && children.empty?
   end
 
-  # Returns a string visualization of the Radix tree
   def visualize
     String.build do |io|
       visualize(0, io)
@@ -178,7 +145,7 @@ class Oak::Node(T)
   end
 
   protected def shared_key?(path)
-    Searcher(T).new(path: path, key: key).shared_key?
+    Searcher(T).new(path: path, node: self).shared_key?
   end
 
   protected def should_walk?(path)

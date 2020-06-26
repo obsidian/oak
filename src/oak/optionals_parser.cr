@@ -1,6 +1,6 @@
 # :nodoc:
 struct Oak::OptionalsParser
-  class Context
+  struct Context
     property path = ""
     property? placeholder = false
     getter children = [] of OptionalsParser

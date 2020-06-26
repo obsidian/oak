@@ -1,5 +1,5 @@
 require "./walker"
-
+# :nodoc:
 struct Oak::KeyWalker < Oak::Walker
   def dynamic_char?
     {'*', ':'}.includes? reader.current_char
@@ -8,9 +8,9 @@ struct Oak::KeyWalker < Oak::Walker
   def name
     next_char
     size = size_until_marker
-    slice(pos, size).tap do |name|
-      self.pos += size
-    end
+    name = slice(pos, size)
+    self.pos += size
+    name
   end
 
   def marker?
@@ -19,7 +19,7 @@ struct Oak::KeyWalker < Oak::Walker
 
   def catch_all?
     reader.pos < bytesize && (
-      (current_char == '/' && peek_char == '*') || current_char == '*'
+      (current_char == '/' && peek_next_char == '*') || current_char == '*'
     )
   end
 end

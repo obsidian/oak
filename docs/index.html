@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.33.0">
+
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/doc.js"></script>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+
+  <meta id="repository-name" content="github.com/obsidian/oak">
+  <title>README - github.com/obsidian/oak</title>
+  <script type="text/javascript">
+  CrystalDoc.base_path = "";
+  </script>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="repository-links">
+      <a href="index.html">README</a>
+    </div>
+  </div>
+
+  <div class="search-results" class="hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent " data-id="github.com/obsidian/oak/Oak" data-name="oak">
+      <a href="Oak.html">Oak</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/obsidian/oak/Oak/Result" data-name="oak::result(t)">
+      <a href="Oak/Result.html">Result</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/obsidian/oak/Oak/SharedKeyError" data-name="oak::sharedkeyerror">
+      <a href="Oak/SharedKeyError.html">SharedKeyError</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/obsidian/oak/Oak/Tree" data-name="oak::tree(t)">
+      <a href="Oak/Tree.html">Tree</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1><a id="oak" class="anchor" href="#oak">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Oak</h1>
+
+<p>Another <a href="https://en.wikipedia.org/wiki/Radix_tree" target="_blank">radix tree</a> implementation for crystal-lang</p>
+
+<p><a href="https://travis-ci.org/obsidian/oak" target="_blank"><img src="https://img.shields.io/travis/obsidian/oak.svg" alt="Build Status"/></a>
+<a href="https://github.com/obsidian/oak/tags" target="_blank"><img src="https://img.shields.io/github/tag/obsidian/oak.svg" alt="Latest Tag"/></a></p>
+
+<h2><a id="installation" class="anchor" href="#installation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Installation</h2>
+
+<p>Add this to your application's <code>shard.yml</code>:</p>
+
+<pre><code class="language-yaml">dependencies:
+  oak:
+    github: obsidian/oak</code></pre>
+
+<h2><a id="usage" class="anchor" href="#usage">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Usage</h2>
+
+<h3><a id="building-trees" class="anchor" href="#building-trees">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Building Trees</h3>
+
+<p>You can associate one or more <em>payloads</em> with each path added to the tree:</p>
+
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;oak&quot;</span>
+
+tree <span class="o">=</span> <span class="t">Oak</span><span class="t">::</span><span class="t">Tree</span>(<span class="t">Symbol</span>).<span class="k">new</span>
+tree.add <span class="s">&quot;/products&quot;</span>, <span class="n">:products</span>
+tree.add <span class="s">&quot;/products/featured&quot;</span>, <span class="n">:featured</span>
+
+results <span class="o">=</span> tree.search <span class="s">&quot;/products/featured&quot;</span>
+
+<span class="k">if</span> result <span class="o">=</span> results.first?
+  puts result.payload <span class="c"># =&gt; :featured</span>
+<span class="k">end</span></code></pre>
+
+<p>The types allowed for a payload are defined on Tree definition:</p>
+
+<pre><code class="language-crystal">tree <span class="o">=</span> <span class="t">Oak</span><span class="t">::</span><span class="t">Tree</span>(<span class="t">Symbol</span>).<span class="k">new</span>
+
+<span class="c"># Good, since Symbol is allowed as payload</span>
+tree.add <span class="s">&quot;/&quot;</span>, <span class="n">:root</span>
+
+<span class="c"># Compilation error, Int32 is not allowed</span>
+tree.add <span class="s">&quot;/meaning-of-life&quot;</span>, <span class="n">42</span></code></pre>
+
+<p>Can combine multiple types if needed:</p>
+
+<pre><code class="language-crystal">tree <span class="o">=</span> <span class="t">Oak</span><span class="t">::</span><span class="t">Tree</span>(<span class="t">Int32</span> <span class="o">|</span> <span class="t">String</span> <span class="o">|</span> <span class="t">Symbol</span>).<span class="k">new</span>
+
+tree.add <span class="s">&quot;/&quot;</span>, <span class="n">:root</span>
+tree.add <span class="s">&quot;/meaning-of-life&quot;</span>, <span class="n">42</span>
+tree.add <span class="s">&quot;/hello&quot;</span>, <span class="s">&quot;world&quot;</span></code></pre>
+
+<h3><a id="lookup-and-placeholders" class="anchor" href="#lookup-and-placeholders">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Lookup and placeholders</h3>
+
+<p>You can also extract values from placeholders (as named or globbed segments):</p>
+
+<pre><code class="language-crystal">tree.add <span class="s">&quot;/products/:id&quot;</span>, <span class="n">:product</span>
+
+result <span class="o">=</span> tree.find <span class="s">&quot;/products/1234&quot;</span>
+
+<span class="k">if</span> result
+  puts result.params[<span class="s">&quot;id&quot;</span>]? <span class="c"># =&gt; &quot;1234&quot;</span>
+<span class="k">end</span></code></pre>
+
+<p>Please see <code>Oak::Tree#add</code> documentation for more usage examples.</p>
+
+<h2><a id="optionals" class="anchor" href="#optionals">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Optionals</h2>
+
+<p>Oak has the ability to add optional paths, i.e. <code>foo(/bar)/:id</code>, which will expand
+into two routes: <code>foo/bar/:id</code> and <code>foo/:id</code>. In the following example, both results
+will match and return the same payload.</p>
+
+<pre><code class="language-crystal">tree.add <span class="s">&quot;/products(/free)/:id&quot;</span>, <span class="n">:product</span>
+
+<span class="k">if</span> result <span class="o">=</span> tree.find <span class="s">&quot;/products/1234&quot;</span>
+  puts result.params[<span class="s">&quot;id&quot;</span>]? <span class="c"># =&gt; &quot;1234&quot;</span>
+  puts result.payload <span class="c"># =&gt; :product</span>
+<span class="k">end</span>
+
+<span class="k">if</span> result <span class="o">=</span> tree.find <span class="s">&quot;/products/free/1234&quot;</span>
+  puts result.params[<span class="s">&quot;id&quot;</span>]? <span class="c"># =&gt; &quot;1234&quot;</span>
+  puts result.payload <span class="c"># =&gt; :product</span>
+<span class="k">end</span></code></pre>
+
+<h2><a id="caveats" class="anchor" href="#caveats">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Caveats</h2>
+
+<h3><a id="multiple-results" class="anchor" href="#multiple-results">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Multiple results</h3>
+
+<p>Due the the dynamic nature of this radix tree, and to allow for a more flexible
+experience for the implementer, the <code>.search</code> method will return a list of results.
+Alternatively, you can interact with the results by providing a block.</p>
+
+<pre><code class="language-crystal">matching_payload <span class="o">=</span> <span class="n">nil</span>
+@tree.search(path) <span class="k">do</span> <span class="o">|</span>result<span class="o">|</span>
+  <span class="k">unless</span> matching_payload
+    context.request.path_params <span class="o">=</span> result.params
+    matching_payload <span class="o">=</span> result.payloads.find <span class="k">do</span> <span class="o">|</span>payload<span class="o">|</span>
+      payload.matches_constraints? context.request
+    <span class="k">end</span>
+    matching_payload.try <span class="o">&amp;</span>.call(context)
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+
+<h3><a id="multiple-leaves" class="anchor" href="#multiple-leaves">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Multiple Leaves</h3>
+
+<p>In order to allow for a more flexible experience for the implementer, this
+implementation of radix will not error if a multiple payloads are added at the
+same path/key. You can either call the <code>.payload</code> method to grab the first payload,
+or you can use the <code>.payloads</code> method, which will return all the payloads.</p>
+
+<h3><a id="shared-keys" class="anchor" href="#shared-keys">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Shared Keys</h3>
+
+<p>When designing and adding <em>paths</em> to a Tree, please consider that two different
+named parameters cannot share the same level:</p>
+
+<pre><code class="language-crystal">tree.add <span class="s">&quot;/&quot;</span>, <span class="n">:root</span>
+tree.add <span class="s">&quot;/:post&quot;</span>, <span class="n">:post</span>
+tree.add <span class="s">&quot;/:category/:post&quot;</span>, <span class="n">:category_post</span> <span class="c"># =&gt; Radix::Tree::SharedKeyError</span></code></pre>
+
+<p>This is because different named parameters at the same level will result in
+incorrect <code>params</code> when lookup is performed, and sometimes the value for
+<code>post</code> or <code>category</code> parameters will not be stored as expected.</p>
+
+<p>To avoid this issue, usage of explicit keys that differentiate each path is
+recommended.</p>
+
+<p>For example, following a good SEO practice will be consider <code>/:post</code> as
+absolute permalink for the post and have a list of categories which links to
+a permalink of the posts under that category:</p>
+
+<pre><code class="language-crystal">tree.add <span class="s">&quot;/&quot;</span>, <span class="n">:root</span>
+tree.add <span class="s">&quot;/:post&quot;</span>, <span class="n">:post</span>                    <span class="c"># this is post permalink</span>
+tree.add <span class="s">&quot;/categories&quot;</span>, <span class="n">:categories</span>         <span class="c"># list of categories</span>
+tree.add <span class="s">&quot;/categories/:category&quot;</span>, <span class="n">:category</span> <span class="c"># listing of posts under each category</span></code></pre>
+
+<h2><a id="roadmap" class="anchor" href="#roadmap">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Roadmap</h2>
+
+<ul><li>[X] Support multiple payloads at the same level in the tree.</li><li>[X] Return multiple matches when searching the tree.</li><li>[X] Support optionals in the key path.</li><li>[ ] Overcome shared key caveat.</li></ul>
+
+<h2><a id="implementation" class="anchor" href="#implementation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Implementation</h2>
+
+<p>This project has been inspired and adapted from:
+<a href="https://github.com/luislavena/radix" target="_blank">luislavena</a></p>
+
+<h2><a id="contributing" class="anchor" href="#contributing">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributing</h2>
+
+<ol><li>Fork it ( https://github.com/obsidian/oak/fork )</li><li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li><li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li><li>Push to the branch (<code>git push origin my-new-feature</code>)</li><li>Create a new Pull Request</li></ol>
+
+<h2><a id="contributors" class="anchor" href="#contributors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributors</h2>
+
+<ul><li><a href="https://github.com/jwaldrip" target="_blank">Jason Waldrip</a> - creator, maintainer</li></ul>
+</div>
+</body>
+</html>

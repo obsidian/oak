@@ -402,28 +402,28 @@ module Oak
           tree.add "/", :root
           tree.add "/:post", :post
 
-          expect_raises Node::SharedKeyError do
+          expect_raises SharedKeyError do
             tree.add "/:category/:post", :category_post
           end
         end
 
         # TODO: uncomment when the shared key issue is overcome
         # it "allows different named parameters sharing same level" do
-        #   tree = Node(Symbol).new
+        #   tree = Tree(Symbol).new
         #   tree.add "/", :root
         #   tree.add "/c-:post", :post
         #   tree.add "/c-:category/p-:post", :category_post
         #   tree.add "/c-:category/p-:poll/:id", :category_poll
         #   puts tree.visualize
-        #
+        
         #   results = tree.search("/c-1")
-        #   puts results.map(&.key)
         #   results.size.should eq 1
         #   results.first.payloads.size.should eq 1
         #   results.first.params.should eq({ "post" => "1" })
         #   results.first.payloads.first.should eq :post
-        #
-        #   results = tree.search("/a/b")
+        
+        #   results = tree.search("/c-a/p-b")
+        #   puts results.first.params
         #   results.size.should eq 1
         #   results.first.payloads.size.should eq 1
         #   results.first.params.should eq({ "category" => "a", "post" => "b" })
