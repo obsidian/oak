@@ -63,7 +63,7 @@ struct Oak::Searcher(T)
   end
 
   private def walk!
-    while_matching do
+    while @key.has_next? && @path.has_next? && (@key.dynamic_char? || matching_chars?)
       case @key.current_char
       when '*'
         name = @key.name
@@ -77,22 +77,19 @@ struct Oak::Searcher(T)
     end
   end
 
+  @[AlwaysInline]
   private def advance
     @key.next_char
     @path.next_char
   end
 
+  @[AlwaysInline]
   private def end?
     !@path.has_next? && !@key.has_next?
   end
 
+  @[AlwaysInline]
   private def matching_chars?
     @path.current_char == @key.current_char
-  end
-
-  private def while_matching
-    while @key.has_next? && @path.has_next? && (@key.dynamic_char? || matching_chars?)
-      yield
-    end
   end
 end

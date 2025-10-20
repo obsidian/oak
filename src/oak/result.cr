@@ -1,5 +1,7 @@
 struct Oak::Result(T)
   @nodes = [] of Node(T)
+  @cached_key : String? = nil
+  @find_first : Bool = false
 
   # The named params found in the result.
   getter params = {} of String => String
@@ -7,10 +9,10 @@ struct Oak::Result(T)
   # The matching payloads of the result.
   getter payloads = [] of T
 
-  def initialize
+  def initialize(@find_first = false)
   end
 
-  def initialize(@nodes, @params)
+  def initialize(@nodes, @params, @find_first = false)
   end
 
   def found?
@@ -28,7 +30,7 @@ struct Oak::Result(T)
 
   # The full resulting key.
   def key
-    String.build do |io|
+    @cached_key ||= String.build do |io|
       @nodes.each do |node|
         io << node.key
       end
@@ -43,8 +45,13 @@ struct Oak::Result(T)
 
   # :nodoc:
   def track(node : Node(T))
-    clone.tap do
+    if @find_first
       yield track(node)
+      self
+    else
+      clone.tap do
+        yield track(node)
+      end
     end
   end
 
@@ -57,12 +64,17 @@ struct Oak::Result(T)
 
   # :nodoc:
   def use(node : Node(T))
-    clone.tap do
+    if @find_first
       yield use(node)
+      self
+    else
+      clone.tap do
+        yield use(node)
+      end
     end
   end
 
   private def clone
-    self.class.new(@nodes.dup, @params.dup)
+    self.class.new(@nodes.dup, @params.dup, @find_first)
   end
 end

@@ -11,7 +11,12 @@ struct Oak::Tree(T)
 
   # Find the first matching result in the tree.
   def find(path)
-    search(path).first? || Result(T).new
+    result = nil
+    Searcher(T).search(@root, path, Result(T).new(find_first: true)) do |r|
+      result = r
+      break
+    end
+    result || Result(T).new
   end
 
   # Search the tree and return all results as an array.
