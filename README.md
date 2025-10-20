@@ -2,8 +2,10 @@
 
 A high-performance [radix tree](https://en.wikipedia.org/wiki/Radix_tree) (compressed trie) implementation for Crystal, optimized for speed and memory efficiency.
 
-[![Build Status](https://img.shields.io/travis/obsidian/oak.svg)](https://travis-ci.org/obsidian/oak)
+[![CI Status](https://github.com/obsidian/oak/workflows/CI/badge.svg)](https://github.com/obsidian/oak/actions)
 [![Latest Tag](https://img.shields.io/github/tag/obsidian/oak.svg)](https://github.com/obsidian/oak/tags)
+[![License](https://img.shields.io/github/license/obsidian/oak.svg)](LICENSE)
+[![Crystal Version](https://img.shields.io/badge/crystal-%3E%3D0.23.1-blue.svg)](https://crystal-lang.org)
 
 ## Features
 
