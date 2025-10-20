@@ -128,13 +128,7 @@ struct Oak::Result(T)
   end
 
   # :nodoc:
-  def track(node : Node(T))
-    @nodes << node
-    self
-  end
-
-  # :nodoc:
-  def track(node : Node(T))
+  def track(node : Node(T), &block)
     if @find_first
       yield track(node)
       self
@@ -146,14 +140,13 @@ struct Oak::Result(T)
   end
 
   # :nodoc:
-  def use(node : Node(T))
-    track node
-    @payloads.replace node.payloads
+  def track(node : Node(T))
+    @nodes << node
     self
   end
 
   # :nodoc:
-  def use(node : Node(T))
+  def use(node : Node(T), &block)
     if @find_first
       yield use(node)
       self
@@ -162,6 +155,13 @@ struct Oak::Result(T)
         yield use(node)
       end
     end
+  end
+
+  # :nodoc:
+  def use(node : Node(T))
+    track node
+    @payloads.replace node.payloads
+    self
   end
 
   private def clone
