@@ -1,7 +1,22 @@
 require "./node"
 
+# Internal data structure containing node children and payloads.
+#
+# ## Performance Optimization
+#
+# Context automatically builds a HashMap for O(1) child lookups when the number of
+# children exceeds `CHILD_MAP_THRESHOLD` (10). This dramatically improves performance
+# for high-fanout nodes common in REST APIs.
+#
+# Example: A node with 20 children will use HashMap, reducing average lookup from
+# 10 comparisons (linear search) to 1 (hash lookup).
+#
 # :nodoc:
 struct Oak::Context(T)
+  # Threshold for switching from linear search to HashMap-based child lookup.
+  #
+  # When children.size >= 10, a HashMap is automatically built for O(1) lookups.
+  # This threshold balances memory overhead vs. lookup performance.
   CHILD_MAP_THRESHOLD = 10
 
   getter children = [] of Node(T)
