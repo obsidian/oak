@@ -20,7 +20,7 @@ class Oak::Node(T)
   protected getter priority : Int32 = 0
   protected getter context = Context(T).new
   protected getter kind = Kind::Normal
-  protected getter first_char : Char = '\0'
+  getter first_char : Char = '\0'
 
   # :nodoc:
   delegate payloads, payloads?, payload, payload?, children, children?, to: @context
