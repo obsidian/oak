@@ -20,6 +20,7 @@ class Oak::Node(T)
   protected getter priority : Int32 = 0
   protected getter context = Context(T).new
   protected getter kind = Kind::Normal
+  getter first_char : Char = '\0'
 
   # :nodoc:
   delegate payloads, payloads?, payload, payload?, children, children?, to: @context
@@ -36,11 +37,13 @@ class Oak::Node(T)
   # :nodoc:
   def initialize(@key : String, @context : Context(T))
     @priority = compute_priority
+    @first_char = @key[0]? || '\0'
   end
 
   # :nodoc:
   def initialize(@key : String, payload : T? = nil)
     @priority = compute_priority
+    @first_char = @key[0]? || '\0'
     payloads << payload if payload
   end
 
@@ -85,15 +88,14 @@ class Oak::Node(T)
     end
 
     node = if analyzer.split_on_path?
-             new_key = analyzer.remaining_path
+             new_key = String.new(analyzer.remaining_path)
+             new_key_first = new_key[0]?
 
              # Find a child key that matches the remaning path
-             matching_child = children.find do |child|
-               child.key[0]? == new_key[0]?
-             end
+             matching_child = @context.find_child(new_key_first)
 
              if matching_child
-               if matching_child.key[0]? == ':' && new_key[0]? == ':' && !same_key?(new_key, matching_child.key)
+               if matching_child.first_char == ':' && new_key_first == ':' && !same_key?(new_key, matching_child.key)
                  raise SharedKeyError.new(new_key, matching_child.key)
                end
                # add the path & payload within the child Node
@@ -107,15 +109,15 @@ class Oak::Node(T)
              self
            elsif analyzer.split_on_key?
              # Readjust the key of this Node
-             self.key = analyzer.matched_key
+             self.key = String.new(analyzer.matched_key)
 
-             Node(T).new(analyzer.remaining_key, @context).tap do |node|
+             Node(T).new(String.new(analyzer.remaining_key), @context).tap do |node|
                @context = Context.new(node)
 
                # Determine if the path continues
                if analyzer.remaining_path?
                  # Add a new Node with the remaining_path
-                 children << Node(T).new(analyzer.remaining_path, payload)
+                 children << Node(T).new(String.new(analyzer.remaining_path), payload)
                else
                  # Insert the payload
                  payloads << payload
@@ -124,11 +126,13 @@ class Oak::Node(T)
            end
 
     sort!
+    @context.rebuild_child_map_if_needed
     node || self
   end
 
+  @[AlwaysInline]
   protected def dynamic?
-    key[0] == ':' || key[0] == '*'
+    first_char == ':' || first_char == '*'
   end
 
   protected def dynamic_children?
@@ -142,6 +146,7 @@ class Oak::Node(T)
   protected def key=(@key)
     @kind = Kind::Normal # reset kind on change of key
     @priority = compute_priority
+    @first_char = @key[0]? || '\0'
   end
 
   protected def shared_key?(path)
@@ -149,7 +154,7 @@ class Oak::Node(T)
   end
 
   protected def should_walk?(path)
-    key[0]? == '*' || key[0]? == ':' || shared_key?(path)
+    first_char == '*' || first_char == ':' || shared_key?(path)
   end
 
   protected def visualize(depth : Int32, io : IO)

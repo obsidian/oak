@@ -1,6 +1,8 @@
 require "./walker"
+
 # :nodoc:
 struct Oak::KeyWalker < Oak::Walker
+  @[AlwaysInline]
   def dynamic_char?
     {'*', ':'}.includes? reader.current_char
   end

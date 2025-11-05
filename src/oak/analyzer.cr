@@ -17,16 +17,17 @@ struct Oak::Analyzer
     end
   end
 
+  @[AlwaysInline]
   def exact_match?
     at_end_of_path? && path_pos_at_end_of_key?
   end
 
   def matched_key
-    key_reader.string.byte_slice(0, key_reader.pos)
+    key_reader.string.unsafe_byte_slice(0, key_reader.pos)
   end
 
   def matched_path
-    path_reader.string.byte_slice(0, path_reader.pos)
+    path_reader.string.unsafe_byte_slice(0, path_reader.pos)
   end
 
   def path_reader_at_zero_pos?
@@ -34,17 +35,19 @@ struct Oak::Analyzer
   end
 
   def remaining_key
-    key.byte_slice(path_reader.pos)
+    key.unsafe_byte_slice(path_reader.pos)
   end
 
   def remaining_path
-    path_reader.string.byte_slice(path_reader.pos)
+    path_reader.string.unsafe_byte_slice(path_reader.pos)
   end
 
+  @[AlwaysInline]
   def split_on_key?
     !path_reader_at_zero_pos? || remaining_key?
   end
 
+  @[AlwaysInline]
   def split_on_path?
     path_reader_at_zero_pos? || (remaining_path? && path_larger_than_key?)
   end

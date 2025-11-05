@@ -50,13 +50,15 @@ abstract struct Oak::Walker
   end
 
   def slice(*args)
-    reader.string.byte_slice(*args)
+    reader.string.unsafe_byte_slice(*args)
   end
 
+  @[AlwaysInline]
   def trailing_slash_end?
     reader.pos + 1 == bytesize && current_char == '/'
   end
 
+  @[AlwaysInline]
   def marker?
     current_char == '/'
   end
