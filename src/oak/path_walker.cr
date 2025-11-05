@@ -1,4 +1,5 @@
 require "./walker"
+
 # :nodoc:
 struct Oak::PathWalker < Oak::Walker
   def value(marker_count)

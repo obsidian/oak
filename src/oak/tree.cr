@@ -68,13 +68,14 @@ struct Oak::Tree(T)
   # ```
   #
   # Returns an empty Result if no match found (check with `result.found?`).
-  def find(path)
-    result = nil
+  def find(path) : Result(T)
+    found_result : Result(T)? = nil
     Searcher(T).search(@root, path, Result(T).new(find_first: true)) do |r|
-      result = r
-      break
+      found_result = r
+      next
     end
-    result || Result(T).new
+
+    (found_result || Result(T).new).as(Result(T))
   end
 
   # Searches the tree and returns all matching results as an array.

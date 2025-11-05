@@ -5,10 +5,10 @@
 # ```
 # result = tree.find "/users/123/posts/456"
 # if result.found?
-#   result.payload            # => :show_post
-#   result.params["user_id"]  # => "123"
-#   result.params["post_id"]  # => "456"
-#   result.key                # => "/users/:user_id/posts/:post_id"
+#   result.payload           # => :show_post
+#   result.params["user_id"] # => "123"
+#   result.params["post_id"] # => "456"
+#   result.key               # => "/users/:user_id/posts/:post_id"
 # end
 # ```
 #

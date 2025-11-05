@@ -1,4 +1,5 @@
 require "./walker"
+
 # :nodoc:
 struct Oak::KeyWalker < Oak::Walker
   @[AlwaysInline]

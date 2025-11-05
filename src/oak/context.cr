@@ -49,8 +49,8 @@ struct Oak::Context(T)
   def find_child(first_char : Char?)
     return nil if first_char.nil?
 
-    if @child_map
-      @child_map[first_char]?
+    if child_map = @child_map
+      child_map[first_char]?
     else
       children.find { |child| child.first_char == first_char }
     end

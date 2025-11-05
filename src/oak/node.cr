@@ -88,7 +88,7 @@ class Oak::Node(T)
     end
 
     node = if analyzer.split_on_path?
-             new_key = analyzer.remaining_path
+             new_key = String.new(analyzer.remaining_path)
              new_key_first = new_key[0]?
 
              # Find a child key that matches the remaning path
@@ -109,15 +109,15 @@ class Oak::Node(T)
              self
            elsif analyzer.split_on_key?
              # Readjust the key of this Node
-             self.key = analyzer.matched_key
+             self.key = String.new(analyzer.matched_key)
 
-             Node(T).new(analyzer.remaining_key, @context).tap do |node|
+             Node(T).new(String.new(analyzer.remaining_key), @context).tap do |node|
                @context = Context.new(node)
 
                # Determine if the path continues
                if analyzer.remaining_path?
                  # Add a new Node with the remaining_path
-                 children << Node(T).new(analyzer.remaining_path, payload)
+                 children << Node(T).new(String.new(analyzer.remaining_path), payload)
                else
                  # Insert the payload
                  payloads << payload
