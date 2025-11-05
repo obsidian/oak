@@ -1,2 +1,2 @@
 [tools]
-crystal = "latest"
+crystal = "1.14.0"
