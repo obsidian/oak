@@ -49,6 +49,8 @@ struct Oak::Searcher(T)
           @result = result.track @node do |outer_result|
             self.class.search(child, remaining_path, outer_result, &block)
           end
+          # If find_first mode and we found payloads, stop searching other children
+          break if result.@find_first && @result.try(&.found?)
         end
       end
     elsif @key.has_next?
