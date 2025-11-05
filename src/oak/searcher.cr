@@ -44,7 +44,7 @@ struct Oak::Searcher(T)
     elsif @path.has_next?
       @result = result.use(@node, &block) if @path.trailing_slash_end?
       @node.children.each do |child|
-        remaining_path = @path.remaining
+        remaining_path = String.new(@path.remaining)
         if child.should_walk?(remaining_path)
           @result = result.track @node do |outer_result|
             self.class.search(child, remaining_path, outer_result, &block)
@@ -56,43 +56,40 @@ struct Oak::Searcher(T)
         @result = result.use(@node, &block)
       elsif @key.catch_all?
         @key.next_char unless @key.current_char == '*'
-        result.params[@key.name] = ""
+        result.params[String.new(@key.name)] = ""
         @result = result.use(@node, &block)
       end
     end
   end
 
   private def walk!
-    while_matching do
+    while @key.has_next? && @path.has_next? && (@key.dynamic_char? || matching_chars?)
       case @key.current_char
       when '*'
-        name = @key.name
-        value = @path.value(@key.marker_count)
+        name = String.new(@key.name)
+        value = String.new(@path.value(@key.marker_count))
         result.params[name] = value unless name.empty?
       when ':'
-        result.params[@key.name] = @path.value
+        result.params[String.new(@key.name)] = String.new(@path.value)
       else
         advance
       end
     end
   end
 
+  @[AlwaysInline]
   private def advance
     @key.next_char
     @path.next_char
   end
 
+  @[AlwaysInline]
   private def end?
     !@path.has_next? && !@key.has_next?
   end
 
+  @[AlwaysInline]
   private def matching_chars?
     @path.current_char == @key.current_char
-  end
-
-  private def while_matching
-    while @key.has_next? && @path.has_next? && (@key.dynamic_char? || matching_chars?)
-      yield
-    end
   end
 end

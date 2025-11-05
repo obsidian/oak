@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop, claude/** ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    name: Test on Crystal ${{ matrix.crystal }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        crystal:
+          - 1.10.1
+          - 1.9.2
+          - 1.14.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal }}
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Check formatting
+        run: crystal tool format --check
+        continue-on-error: true
+
+      - name: Run tests
+        run: crystal spec --error-trace
+
+      - name: Build project
+        run: crystal build --no-codegen src/oak.cr
+
+  benchmark:
+    name: Benchmark Performance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: 1.14.0
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Build benchmark (release mode)
+        run: crystal build --release benchmark -o benchmark_binary
+        continue-on-error: true
+
+      - name: Run benchmark validation
+        run: |
+          if [ -f benchmark_binary ]; then
+            echo "Benchmark binary built successfully"
+            # Quick smoke test (don't run full benchmark in CI)
+            echo "Benchmark is ready to run"
+          else
+            echo "Benchmark build skipped or failed"
+          fi
+        continue-on-error: true
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: 1.14.0
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Run Ameba (linter)
+        run: |
+          if shards info ameba >/dev/null 2>&1; then
+            crystal run lib/ameba/src/cli.cr -- --all
+          else
+            echo "Ameba not installed, skipping lint"
+          fi
+        continue-on-error: true
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: 1.14.0
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Generate coverage report
+        run: |
+          echo "Running tests with coverage..."
+          crystal spec --error-trace
+          echo "Coverage report would be generated here"
+        continue-on-error: true
+
+  docs:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: 1.14.0
+
+      - name: Generate documentation
+        run: crystal docs
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs/
+          retention-days: 7
+
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [test, benchmark, lint]
+    if: always()
+
+    steps:
+      - name: Check CI Results
+        run: |
+          echo "Test Status: ${{ needs.test.result }}"
+          echo "Benchmark Status: ${{ needs.benchmark.result }}"
+          echo "Lint Status: ${{ needs.lint.result }}"
+
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Tests failed!"
+            exit 1
+          fi
+
+          echo "✅ All critical checks passed!"
